@@ -8,6 +8,7 @@ const Memory = () => {
     opinions: [],
     skills: [],
     personality: [],
+    health: [],
     others: []
   });
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,7 @@ const Memory = () => {
     opinions: 'Opinions',
     skills: 'Skills',
     personality: 'Personality',
+    health: 'Health',
     others: 'Other'
   };
 
@@ -30,6 +32,7 @@ const Memory = () => {
     opinions: '💭',
     skills: '🎯',
     personality: '🌟',
+    health: '🏥',
     others: '📝'
   };
 
@@ -95,6 +98,7 @@ const Memory = () => {
           opinions: [],
           skills: [],
           personality: [],
+          health: [],
           others: []
         });
       } catch (error) {

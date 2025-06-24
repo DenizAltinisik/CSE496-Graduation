@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileCompletion = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const ProfileCompletion = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { fetchUser } = useAuth();
+  const navigate = useNavigate();
 
   const ageGroups = [
     '7-12', '13-16', '17-20', '21-24', 
@@ -47,6 +49,8 @@ const ProfileCompletion = () => {
     try {
       await axios.post('/api/complete-profile', formData);
       await fetchUser(); // Refresh user data
+      // Navigate to persona selection
+      navigate('/select-persona');
     } catch (error) {
       setError(error.response?.data?.error || 'Error completing profile');
     } finally {

@@ -109,21 +109,19 @@ const MainPage = () => {
       case 'memory':
         return (
           <div className="tab-content">
-            <h2>🧠 Memory</h2>
+            
             <Memory />
           </div>
         );
       case 'diary':
         return (
           <div className="tab-content">
-            <h2>📔 Diary</h2>
             <Diary />
           </div>
         );
       case 'profile':
         return (
           <div className="tab-content">
-            <h2>👤 Profile</h2>
             <Profile handlePersonaUpdate={handlePersonaUpdate} />
           </div>
         );

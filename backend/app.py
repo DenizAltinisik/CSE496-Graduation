@@ -11,10 +11,17 @@ from openai import OpenAI
 from googleapiclient.discovery import build
 import re
 
-load_dotenv()
+# Load environment variables from .env file (override system variables)
+load_dotenv(override=True)
 
 app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-this')
+
+# JWT configuration - require from .env for security
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+if not JWT_SECRET_KEY:
+    raise ValueError("JWT_SECRET_KEY environment variable is required")
+
+app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
 jwt = JWTManager(app)
@@ -31,49 +38,22 @@ diary_collection = db['diary']
 feedback_collection = db['feedback']
 
 # OpenAI configuration
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY environment variable is required")
+if not OPENAI_API_KEY.startswith('sk-'):
+    raise ValueError("OPENAI_API_KEY must be a valid OpenAI API key (starts with 'sk-')")
+
 openai = OpenAI(
-    api_key="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"
+    api_key=OPENAI_API_KEY
 )
 
 # YouTube API configuration
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
-youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-
-def search_youtube_video(query, max_results=1):
-    """Search for YouTube videos related to the query"""
-    try:
-        if not YOUTUBE_API_KEY:
-            return None
-            
-        # Search for videos
-        search_response = youtube.search().list(
-            q=query,
-            part='id,snippet',
-            maxResults=max_results,
-            type='video',
-            order='relevance'
-        ).execute()
-        
-        if search_response['items']:
-            video = search_response['items'][0]
-            video_id = video['id']['videoId']
-            title = video['snippet']['title']
-            description = video['snippet']['description'][:150] + '...' if len(video['snippet']['description']) > 150 else video['snippet']['description']
-            thumbnail = video['snippet']['thumbnails']['medium']['url']
-            
-            return {
-                'video_id': video_id,
-                'url': f'https://www.youtube.com/watch?v={video_id}',
-                'embed_url': f'https://www.youtube.com/embed/{video_id}',
-                'title': title,
-                'description': description,
-                'thumbnail': thumbnail
-            }
-    except Exception as e:
-        print(f"YouTube API error: {e}")
-        return None
-    
-    return None
+if YOUTUBE_API_KEY:
+    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+else:
+    youtube = None
 
 # Multi-level problem solving system prompts
 SYSTEM_PROMPTS = {
@@ -109,6 +89,41 @@ In line with persona characteristics:
 
 IMPORTANT: Do not start your response with any introductory sentence. Go directly into explaining the implementation steps."""
 }
+
+def search_youtube_video(query, max_results=1):
+    """Search for YouTube videos related to the query"""
+    try:
+        if not YOUTUBE_API_KEY or not youtube:
+            return None
+            
+        # Search for videos
+        search_response = youtube.search().list(
+            q=query,
+            part='id,snippet',
+            maxResults=max_results,
+            type='video',
+            order='relevance'
+        ).execute()
+        
+        if search_response['items']:
+            video = search_response['items'][0]
+            video_id = video['id']['videoId']
+            title = video['snippet']['title']
+            description = video['snippet']['description'][:150] + '...' if len(video['snippet']['description']) > 150 else video['snippet']['description']
+            thumbnail = video['snippet']['thumbnails']['medium']['url']
+            
+            return {
+                'video_id': video_id,
+                'url': f'https://www.youtube.com/watch?v={video_id}',
+                'embed_url': f'https://www.youtube.com/embed/{video_id}',
+                'title': title,
+                'description': description,
+                'thumbnail': thumbnail
+            }
+    except Exception as e:
+        return None
+    
+    return None
 
 def generate_chat_title(user_message):
     """Generate a proper, concise title for the chat based on user's message"""
@@ -154,26 +169,27 @@ def extract_memory_info(user_message, user_id):
             messages=[
                 {
                     "role": "system", 
-                    "content": """Sen bir kişisel bilgi çıkarma uzmanısın. Kullanıcının mesajından kişisel bilgileri çıkar ve kategorilere ayır.
+                    "content": """You are a personal information extraction expert. Extract and categorize personal information from the user's message.
 
-Kategoriler:
-- family_friends: Aile üyeleri, arkadaşlar, ilişkiler (örn: "annem", "kardeşim", "en yakın arkadaşım")
-- favorites: Sevdikleri, tercihler (örn: "pizza severim", "mavi rengini seviyorum")
-- opinions: Görüşler, düşünceler (örn: "spor yapmak sağlıklıdır", "teknoloji hayatı kolaylaştırır")
-- skills: Yetenekler, beceriler (örn: "piyano çalabiliyorum", "programlama biliyorum")
-- personality: Kişilik özellikleri (örn: "sentimental", "hediye vermeyi seviyorum", "mükemmeliyetçiyim")
-- others: Diğer kişisel bilgiler
+Categories:
+- family_friends: Family members, friends, relationships (e.g., "my mom", "my brother", "my best friend")
+- favorites: Likes, preferences (e.g., "I love pizza", "my favorite color is blue")
+- opinions: Views, thoughts (e.g., "exercise is healthy", "technology makes life easier")
+- skills: Abilities, competencies (e.g., "I can play piano", "I know programming")
+- personality: Personality traits (e.g., "sentimental", "I love giving gifts", "I'm a perfectionist")
+- health: Health conditions, medical issues, symptoms (e.g., "I have diabetes", "my back hurts", "I'm allergic to peanuts")
+- others: Other personal information
 
-JSON formatında yanıt ver. Eğer hiçbir kişisel bilgi yoksa boş obje döndür.
+Respond in JSON format. If no personal information is found, return an empty object.
 
-Örnek:
-Mesaj: "anneme hediye almak istiyorum, ne almalıyım"
-Yanıt: {
-  "family_friends": ["annesi var"],
-  "personality": ["hediye vermeyi seven", "düşünceli"]
+Example:
+Message: "I want to buy a gift for my mom, what should I get"
+Response: {
+  "family_friends": ["has a mother"],
+  "personality": ["gift-giving", "thoughtful"]
 }
 
-Sadece JSON döndür, başka hiçbir şey yazma."""
+Return only JSON, nothing else."""
                 },
                 {"role": "user", "content": user_message}
             ],
@@ -194,7 +210,6 @@ Sadece JSON döndür, başka hiçbir şey yazma."""
             return {}
             
     except Exception as e:
-        print(f"Memory extraction error: {e}")
         return {}
 
 def save_memory_info(user_id, memory_data):
@@ -229,6 +244,7 @@ def save_memory_info(user_id, memory_data):
                 "opinions": memory_data.get("opinions", []),
                 "skills": memory_data.get("skills", []),
                 "personality": memory_data.get("personality", []),
+                "health": memory_data.get("health", []),
                 "others": memory_data.get("others", []),
                 "created_at": datetime.now(timezone.utc),
                 "updated_at": datetime.now(timezone.utc)
@@ -236,7 +252,7 @@ def save_memory_info(user_id, memory_data):
             memories_collection.insert_one(memory_doc)
             
     except Exception as e:
-        print(f"Memory save error: {e}")
+        return
 
 def get_user_memory_context(user_id, current_topic=""):
     """Get user memory context for personalized responses with relevance filtering"""
@@ -254,18 +270,18 @@ def get_user_memory_context(user_id, current_topic=""):
                     messages=[
                         {
                             "role": "system", 
-                            "content": """Sen bir hafıza relevans uzmanısın. Kullanıcının mevcut konusu ile hafıza bilgilerinin alakalı olup olmadığını değerlendir.
+                            "content": """You are a memory relevance expert. Evaluate whether the user's current topic is relevant to the memory information.
                             
-Sadece 'RELEVANT' veya 'NOT_RELEVANT' yanıtı ver. Başka hiçbir şey yazma.
+Respond only with 'RELEVANT' or 'NOT_RELEVANT'. Do not write anything else.
 
-Örnek:
-- Mevcut konu: "kafes yapımı" -> Hafıza: "C dili bilgisi" = NOT_RELEVANT
-- Mevcut konu: "kafes yapımı" -> Hafıza: "marangozluk hobisi" = RELEVANT
-- Mevcut konu: "matematik problemi" -> Hafıza: "matematik öğretmeni" = RELEVANT"""
+Examples:
+- Current topic: "building a cage" -> Memory: "C programming knowledge" = NOT_RELEVANT
+- Current topic: "building a cage" -> Memory: "woodworking hobby" = RELEVANT
+- Current topic: "math problem" -> Memory: "math teacher" = RELEVANT"""
                         },
                         {
                             "role": "user", 
-                            "content": f"Mevcut konu: {current_topic}\n\nHafıza bilgileri:\n{str(memory)}"
+                            "content": f"Current topic: {current_topic}\n\nMemory information:\n{str(memory)}"
                         }
                     ],
                     max_tokens=10,
@@ -274,22 +290,22 @@ Sadece 'RELEVANT' veya 'NOT_RELEVANT' yanıtı ver. Başka hiçbir şey yazma.
                 
                 relevance_result = relevance_check.choices[0].message.content.strip()
                 if relevance_result == "NOT_RELEVANT":
-                    return "\n\n--- KULLANICI HAFIZASI ---\nBu konuyla alakalı özel bilgi bulunamadı.\n"
+                    return "\n\n--- USER MEMORY ---\nNo specific information found related to this topic.\n"
                     
             except Exception as e:
-                print(f"Memory relevance check error: {e}")
                 # If relevance check fails, use limited memory
                 pass
         
         # Build memory context from relevant categories
         memory_parts = []
         categories = {
-            'family_friends': 'Aile & Arkadaşlar',
-            'favorites': 'Favoriler', 
-            'opinions': 'Görüşler',
-            'skills': 'Yetenekler',
-            'personality': 'Kişilik',
-            'others': 'Diğer'
+            'family_friends': 'Family & Friends',
+            'favorites': 'Favorites', 
+            'opinions': 'Opinions',
+            'skills': 'Skills',
+            'personality': 'Personality',
+            'health': 'Health',
+            'others': 'Others'
         }
         
         for category, label in categories.items():
@@ -298,11 +314,10 @@ Sadece 'RELEVANT' veya 'NOT_RELEVANT' yanıtı ver. Başka hiçbir şey yazma.
                 memory_parts.append(f"{label}: {', '.join(items)}")
         
         if memory_parts:
-            return f"\n\n--- KULLANICI HAFIZASI ---\n{chr(10).join(memory_parts)}\n"
+            return f"\n\n--- USER MEMORY ---\n{chr(10).join(memory_parts)}\n"
         
         return ""
     except Exception as e:
-        print(f"Memory context error: {e}")
         return ""
 
 def get_conversation_context(chat_session, max_messages=6):
@@ -326,11 +341,10 @@ def get_conversation_context(chat_session, max_messages=6):
                 context_parts.append(f"{role.upper()}: {content}")
         
         if context_parts:
-            return f"\n\n--- KONUŞMA GEÇMİŞİ ---\n{chr(10).join(context_parts)}\n"
+            return f"\n\n--- CONVERSATION HISTORY ---\n{chr(10).join(context_parts)}\n"
         
         return ""
     except Exception as e:
-        print(f"Conversation context error: {e}")
         return ""
 
 def extract_conversation_memory(user_message, conversation_history):
@@ -341,7 +355,7 @@ def extract_conversation_memory(user_message, conversation_history):
         if conversation_history:
             recent_messages = conversation_history[-10:]  # Last 10 messages for context
             for msg in recent_messages:
-                role = "Kullanıcı" if msg['role'] == 'user' else "Asistan"
+                role = "User" if msg['role'] == 'user' else "Assistant"
                 recent_context += f"{role}: {msg['content'][:200]}...\n"
         
         memory_response = openai.chat.completions.create(
@@ -349,33 +363,33 @@ def extract_conversation_memory(user_message, conversation_history):
             messages=[
                 {
                     "role": "system", 
-                    "content": """Sen bir konuşma hafızası uzmanısın. Kullanıcının mesajından ve konuşma geçmişinden bu konuşmaya özel bilgileri çıkar.
+                    "content": """You are a conversation memory expert. Extract conversation-specific information from the user's message and conversation history.
 
-SADECE bu konuşmada bahsedilen şunları kaydet:
-- Konuşma sırasında paylaşılan geçici durumlar (bugün ne yaptı, şu an nerede, nasıl hissediyor)
-- Bu konuşmada bahsedilen spesifik problemler ve çözümler
-- Konuşma boyunca gelişen fikirler ve kararlar
-- Bu sohbette ortaya çıkan planlar ve hedefler
-- Konuşma sırasında verilen örnekler ve referanslar
+ONLY record the following from this specific conversation:
+- Temporary situations shared during the conversation (what they did today, where they are now, how they're feeling)
+- Specific problems and solutions mentioned in this conversation
+- Ideas and decisions that developed during the conversation
+- Plans and goals that emerged in this chat
+- Examples and references given during the conversation
 
-KAYDETME:
-- Genel kişisel bilgiler (bunlar global hafızada)
-- Kalıcı özellikler (bunlar profilde)
-- Eski konuşmalardan bilgiler
+DO NOT RECORD:
+- General personal information (these are in global memory)
+- Permanent characteristics (these are in the profile)
+- Information from old conversations
 
-JSON formatında yanıt ver:
+Respond in JSON format:
 {
   "conversation_facts": [
-    "Bu konuşmada bahsedilen spesifik bilgi 1",
-    "Bu konuşmada bahsedilen spesifik bilgi 2"
+    "Specific information mentioned in this conversation 1",
+    "Specific information mentioned in this conversation 2"
   ]
 }
 
-Eğer konuşmaya özel bir bilgi yoksa boş array döndür."""
+Return an empty array if there is no conversation-specific information."""
                 },
                 {
                     "role": "user", 
-                    "content": f"Son mesaj: {user_message}\n\nKonuşma geçmişi:\n{recent_context}"
+                    "content": f"Last message: {user_message}\n\nConversation history:\n{recent_context}"
                 }
             ],
             max_tokens=500,
@@ -387,7 +401,6 @@ Eğer konuşmaya özel bir bilgi yoksa boş array döndür."""
         return memory_data.get('conversation_facts', [])
         
     except Exception as e:
-        print(f"Conversation memory extraction error: {e}")
         return []
 
 def save_conversation_memory(chat_id, memory_facts):
@@ -404,7 +417,7 @@ def save_conversation_memory(chat_id, memory_facts):
                 }
             )
     except Exception as e:
-        print(f"Error saving conversation memory: {e}")
+        return
 
 def get_persona_response_style(persona_data, user_feedback_history):
     """Get persona-specific response style and cooperation level based on feedback"""
@@ -559,7 +572,6 @@ def get_user_feedback_history(user_id):
         return feedback_history[-20:]  # Last 20 feedback items
         
     except Exception as e:
-        print(f"Error getting feedback history: {e}")
         return []
 
 def get_user_persona_context(user_id):
@@ -589,7 +601,6 @@ def get_user_persona_context(user_id):
         return context
         
     except Exception as e:
-        print(f"Error getting persona context: {e}")
         return ""
 
 def summarize_chat_session(chat_session):
@@ -657,7 +668,6 @@ Türkçe yanıt ver ve kişisel günlük tarzında yaz."""
         }
         
     except Exception as e:
-        print(f"Chat summarization error: {e}")
         return None
 
 def auto_create_diary_entry(user_id, chat_id):
@@ -685,7 +695,6 @@ def auto_create_diary_entry(user_id, chat_id):
         return result.inserted_id
         
     except Exception as e:
-        print(f"Auto diary creation error: {e}")
         return None
 
 def auto_update_diary_entry(user_id, chat_id):
@@ -717,7 +726,7 @@ def auto_update_diary_entry(user_id, chat_id):
         print(f"Auto-updated diary entry for chat: {chat_id}")
         
     except Exception as e:
-        print(f"Auto diary update error: {e}")
+        return
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -743,6 +752,7 @@ def register():
             'email': email,
             'password': hashed_password,
             'profileComplete': False,
+            'personaSelected': False,
             'ageGroup': None,
             'pronouns': None,
             'occupation': None
@@ -814,12 +824,13 @@ def get_user():
                 'username': user['username'],
                 'email': user['email'],
                 'profileComplete': user.get('profileComplete', False),
+                'personaSelected': user.get('personaSelected', False),
                 'ageGroup': user.get('ageGroup'),
                 'pronouns': user.get('pronouns'),
                 'occupation': user.get('occupation')
             }
         }), 200
-
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -851,6 +862,28 @@ def complete_profile():
         
         return jsonify({
             'message': 'Profile completed successfully'
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/complete-persona-selection', methods=['POST'])
+@jwt_required()
+def complete_persona_selection():
+    try:
+        current_user_id = get_jwt_identity()
+        user = users_collection.find_one({'_id': ObjectId(current_user_id)})
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Mark persona selection as complete
+        users_collection.update_one({'_id': ObjectId(current_user_id)}, {'$set': {
+            'personaSelected': True
+        }})
+        
+        return jsonify({
+            'message': 'Persona selection completed successfully'
         }), 200
 
     except Exception as e:
@@ -931,13 +964,13 @@ def chat():
                 style = persona_response_style['style']
                 persona_style_prompt = f"""
                 
---- PERSONA CEVAP TARZI ---
-Ton: {style['tone']}
+--- PERSONA RESPONSE STYLE ---
+Tone: {style['tone']}
 Format: {style['format']}
-Yaklaşım: {style['approach']}
-Kaçın: {style['avoid']}
+Approach: {style['approach']}
+Avoid: {style['avoid']}
 
-Bu persona özelliklerine uygun şekilde yanıt ver. {persona_response_style['cooperation_instructions']}
+Respond according to these persona characteristics. {persona_response_style['cooperation_instructions']}
 """
             
             # Level 1: Analysis
@@ -1005,12 +1038,11 @@ Bu persona özelliklerine uygun şekilde yanıt ver. {persona_response_style['co
             final_response = final_response.replace("Öncelikle, ", "")
             
         except Exception as e:
-            print(f"Multi-level processing error: {e}")
             # Fallback to simple response
             simple_response = openai.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "Sen yardımcı bir asistansın. Türkçe yanıt ver ve kullanıcının sorununa pratik çözümler sun." + memory_context + persona_context + conversation_memory_context + persona_style_prompt},
+                    {"role": "system", "content": "You are a helpful assistant. Provide practical solutions to the user's problems." + memory_context + persona_context + conversation_memory_context + persona_style_prompt},
                     {"role": "user", "content": user_message}
                 ],
                 max_tokens=1000,
@@ -1022,7 +1054,7 @@ Bu persona özelliklerine uygun şekilde yanıt ver. {persona_response_style['co
         if persona_data and persona_data.get('role') == 'mentor':
             youtube_video = search_youtube_video(user_message)
             if youtube_video:
-                final_response += f"\n\n🎥 **İlgili Video Önerisi:**\n{youtube_video['title']}\n{youtube_video['description']}\n\n[YOUTUBE_VIDEO]{youtube_video['video_id']}[/YOUTUBE_VIDEO]"
+                final_response += f"\n\n🎥 **Relevant Video Suggestion:**\n{youtube_video['title']}\n{youtube_video['description']}\n\n[YOUTUBE_VIDEO]{youtube_video['video_id']}[/YOUTUBE_VIDEO]"
         
         # Add assistant response to history
         assistant_msg = {
@@ -1139,6 +1171,7 @@ def get_memory():
                     'opinions': [],
                     'skills': [],
                     'personality': [],
+                    'health': [],
                     'others': []
                 }
             })
@@ -1153,7 +1186,7 @@ def update_memory():
         data = request.get_json()
         
         # Validate memory data structure
-        valid_categories = ['family_friends', 'favorites', 'opinions', 'skills', 'personality', 'others']
+        valid_categories = ['family_friends', 'favorites', 'opinions', 'skills', 'personality', 'health', 'others']
         memory_data = {}
         
         for category in valid_categories:
@@ -1321,12 +1354,12 @@ def add_message_feedback(chat_id, message_index):
         
         return jsonify({
             'success': True,
-            'message': 'Feedback başarıyla kaydedildi',
+            'message': 'Feedback has been added successfully',
             'feedback': feedback_data
         })
         
     except Exception as e:
-        return jsonify({'error': f'Feedback kaydedilemedi: {str(e)}'}), 500
+        return jsonify({'error': f'Feedback could not be added: {str(e)}'}), 500
 
 @app.route('/api/chat/<chat_id>/message/<message_index>/feedback', methods=['DELETE'])
 @jwt_required()
@@ -1361,11 +1394,11 @@ def remove_message_feedback(chat_id, message_index):
         
         return jsonify({
             'success': True,
-            'message': 'Feedback başarıyla kaldırıldı'
+            'message': 'Feedback has been removed successfully'
         })
         
     except Exception as e:
-        return jsonify({'error': f'Feedback kaldırılamadı: {str(e)}'}), 500
+        return jsonify({'error': f'Feedback could not be removed: {str(e)}'}), 500
 
 @app.route('/api/diary', methods=['GET'])
 @jwt_required()
@@ -1392,17 +1425,17 @@ def create_diary_entry():
         chat_id = data.get('chat_id')
         
         if not chat_id:
-            return jsonify({'error': 'Chat ID gerekli'}), 400
+            return jsonify({'error': 'Chat ID is required'}), 400
         
         chat_session = chats_collection.find_one({'_id': ObjectId(chat_id), 'user_id': current_user_id})
         
         if not chat_session:
-            return jsonify({'error': 'Konuşma bulunamadı'}), 404
+            return jsonify({'error': 'Chat not found'}), 404
         
         diary_summary = summarize_chat_session(chat_session)
         
         if not diary_summary:
-            return jsonify({'error': 'Konuşma özeti oluşturulamadı'}), 500
+            return jsonify({'error': 'Chat summary could not be created'}), 500
         
         diary_entry = {
             'user_id': current_user_id,

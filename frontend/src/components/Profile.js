@@ -12,16 +12,16 @@ const Profile = ({ handlePersonaUpdate }) => {
   const [saving, setSaving] = useState(false);
 
   const roleOptions = [
-    { value: 'friend', label: '👫 Friend', description: 'Friendly and supportive', image: 'friend.png' },
-    { value: 'boyfriend', label: '💙 Boyfriend', description: 'Romantic and protective', image: 'boyfriend.png' },
-    { value: 'girlfriend', label: '💖 Girlfriend', description: 'Romantic and caring', image: 'girlfriend.png' },
-    { value: 'spouse_male', label: '💍 Spouse (Male)', description: 'Deep commitment and partnership', image: 'spouse_male.png' },
-    { value: 'spouse_female', label: '💍 Spouse (Female)', description: 'Deep commitment and partnership', image: 'spouse_female.png' },
-    { value: 'brother', label: '👨 Brother', description: 'Protective and playful', image: 'brother.png' },
-    { value: 'sister', label: '👩 Sister', description: 'Compassionate and understanding', image: 'sister.png' },
-    { value: 'mentor', label: '🎓 Mentor', description: 'Wise and guiding', image: 'mentor.png' },
-    { value: 'advisor', label: '💼 Advisor', description: 'Professional and analytical', image: 'advisor.png' },
-    { value: 'academician', label: '📚 Academician', description: 'Scholarly and educational', image: 'academician.png' }
+    { value: 'friend', label: 'Friend', description: 'Friendly and supportive, uses slangs sometimes', image: 'friend.png' },
+    { value: 'boyfriend', label: 'Boyfriend', description: 'Romantic and protective', image: 'boyfriend.png' },
+    { value: 'girlfriend', label: 'Girlfriend', description: 'Romantic and caring', image: 'girlfriend.png' },
+    { value: 'spouse_male', label: 'Spouse (Male)', description: 'Deep commitment and partnership', image: 'spouse_male.png' },
+    { value: 'spouse_female', label: 'Spouse (Female)', description: 'Deep commitment and partnership', image: 'spouse_female.png' },
+    { value: 'brother', label: 'Brother', description: 'Protective and playful', image: 'brother.png' },
+    { value: 'sister', label: 'Sister', description: 'Compassionate and understanding', image: 'sister.png' },
+    { value: 'mentor', label: 'Mentor', description: 'Wise and guiding', image: 'mentor.png' },
+    { value: 'advisor', label: 'Advisor', description: 'Professional and analytical', image: 'advisor.png' },
+    { value: 'academician', label: 'Academician', description: 'Scholarly and educational', image: 'academician.png' }
   ];
 
   const personalityTraits = [
@@ -150,7 +150,7 @@ const Profile = ({ handlePersonaUpdate }) => {
 
       {/* Role Selection */}
       <div className="profile-section">
-        <h3>🎭 AI's Role</h3>
+        <h3>AI's Role</h3>
         <p className="section-description">
           Choose what kind of relationship you want with your AI assistant
         </p>
@@ -180,7 +180,7 @@ const Profile = ({ handlePersonaUpdate }) => {
 
       {/* Backstory */}
       <div className="profile-section">
-        <h3>📖 Backstory</h3>
+        <h3>Backstory</h3>
         <p className="section-description">
           This text influences how the AI will behave. It shapes its personality.
         </p>
@@ -198,7 +198,7 @@ const Profile = ({ handlePersonaUpdate }) => {
 
       {/* Personality Traits */}
       <div className="profile-section">
-        <h3>🌟 Personality Traits</h3>
+        <h3>Personality Traits</h3>
         <p className="section-description">
           Select the personality traits you want your AI to have (multiple selection)
         </p>
@@ -220,7 +220,7 @@ const Profile = ({ handlePersonaUpdate }) => {
 
       {/* Interests */}
       <div className="profile-section">
-        <h3>❤️ Interests</h3>
+        <h3>Interests</h3>
         <p className="section-description">
           Select topics you want your AI to be knowledgeable and interested in (multiple selection)
         </p>
