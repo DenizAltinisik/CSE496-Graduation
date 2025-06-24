@@ -626,15 +626,15 @@ def summarize_chat_session(chat_session):
                     "role": "system",
                     "content": """You are a diary summary expert. Create a diary entry by summarizing the user's chat conversation.
 
-Çıktı formatı:
-BAŞLIK: [Kısa, öz başlık - maksimum 5-6 kelime]
-ÖZET: [Konuşmanın ana konularını ve önemli noktalarını özetleyen 2-3 cümle]
+Output format:
+TITLE: [Brief, concise title - maximum 5-6 words]
+SUMMARY: [2-3 sentences summarizing the main topics and important points of the conversation]
 
-Türkçe yanıt ver ve kişisel günlük tarzında yaz."""
+Provide an English response and write in a personal diary style.]"""
                 },
                 {
                     "role": "user",
-                    "content": f"Bu konuşmayı özetle:\n\n{conversation_text}"
+                    "content": f"Summarize this conversation:\n\n{conversation_text}"
                 }
             ],
             max_tokens=200,
@@ -649,10 +649,10 @@ Türkçe yanıt ver ve kişisel günlük tarzında yaz."""
         summary = ""
         
         for line in lines:
-            if line.startswith('BAŞLIK:'):
-                title = line.replace('BAŞLIK:', '').strip()
-            elif line.startswith('ÖZET:'):
-                summary = line.replace('ÖZET:', '').strip()
+            if line.startswith('TITLE:'):
+                title = line.replace('TITLE:', '').strip()
+            elif line.startswith('SUMMARY:'):
+                summary = line.replace('SUMMARY:', '').strip()
         
         # Fallback if parsing fails
         if not title:
@@ -995,7 +995,7 @@ Respond according to these persona characteristics. {persona_response_style['coo
                     },
                     {
                         "role": "user", 
-                        "content": f"""Create a strategy based on the analysis below. 
+                        "content": f"""Create a strategy based on the analysis below. Write small steps.
                         Analysis: {analysis}
                         
                         DO NOT START YOUR RESPONSE WITH ANY INTRODUCTORY SENTENCE. Go directly into explaining your strategy as a continuation of the analysis. Do not repeat the analysis in your response."""
@@ -1030,6 +1030,7 @@ Respond according to these persona characteristics. {persona_response_style['coo
             
             # Combine all responses with smooth transitions
             final_response = f"{analysis}\n\n{strategy}\n\n"
+            final_response += implementation
             
             # Clean up any remaining redundant phrases
             final_response = final_response.replace("Tabii ki, ", "")

@@ -223,8 +223,8 @@ const Chat = () => {
       <div className="chat-main">
         <div className="chat-messages">
           {messages.length === 0 ? (
-            <div className="welcome-message">
-              <p>
+            <div className="welcome-message" style={{ color: 'black' }}>
+              <p style={{ color: 'black' }}>
                 Hello! I'm your AI assistant using a multi-level problem-solving approach.
                 I analyze your questions, develop strategies, and provide detailed implementation plans.
               </p>
