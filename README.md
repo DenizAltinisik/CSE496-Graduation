@@ -62,12 +62,6 @@ npm install
 npm start
 ```
 
-## Kullanım
-
-1. Backend: http://localhost:5000
-2. Frontend: http://localhost:3000
-
-Tarayıcınızda http://localhost:3000 adresine giderek uygulamayı kullanabilirsiniz.
 
 ## API Endpoints
 
