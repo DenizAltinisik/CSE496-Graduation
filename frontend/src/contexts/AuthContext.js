@@ -1,8 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 
-// Configure axios base URL
-axios.defaults.baseURL = 'http://localhost:5000';
 
 // Set up axios interceptor to include JWT token
 axios.interceptors.request.use(

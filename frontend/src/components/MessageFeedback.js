@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 
 const MessageFeedback = ({ chatId, messageIndex, currentFeedback, onFeedbackUpdate }) => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);

@@ -5,7 +5,7 @@ import Memory from './Memory';
 import Diary from './Diary';
 import Profile from './Profile';
 import FeedbackModal from './FeedbackModal';
-import axios from 'axios';
+import axios from '../api/axios';
 
 const MainPage = () => {
   const { user, logout } = useAuth();

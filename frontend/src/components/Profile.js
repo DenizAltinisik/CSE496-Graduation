@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
+
 
 const Profile = ({ handlePersonaUpdate }) => {
   const [persona, setPersona] = useState({
