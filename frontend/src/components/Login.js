@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from '../api/axios';
+import './Login.css'; // Make sure to create this file for the footer styling
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -37,6 +38,7 @@ const Login = () => {
   return (
     <div className="auth-container">
       <form className="auth-form" onSubmit={handleSubmit}>
+        <h1>Termini the Chatbot</h1>
         <h2>Sign In</h2>
         
         {error && <div className="error-message">{error}</div>}
@@ -71,6 +73,10 @@ const Login = () => {
         
         <div className="auth-switch">
           Don't have an account? <Link to="/register">Sign Up</Link>
+        </div>
+
+        <div className="footer">
+          Deniz Altınışık
         </div>
       </form>
     </div>
