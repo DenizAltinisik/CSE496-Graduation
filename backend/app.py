@@ -431,64 +431,64 @@ def get_persona_response_style(persona_data, user_feedback_history):
     # Define persona-specific response styles
     persona_styles = {
         'friend': {
-            'tone': 'samimi ve destekleyici',
-            'format': 'doğal sohbet tarzında, arkadaşça',
-            'approach': 'empati göster, deneyim paylaş, pratik öneriler ver',
-            'avoid': 'resmi dil, madde listesi, robotik cevaplar'
+            'tone': 'friendly and supportive',
+            'format': 'natural conversation style, like a friend',
+            'approach': 'show empathy, share experience, give practical advice',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'boyfriend': {
-            'tone': 'sevgi dolu, koruyucu ve anlayışlı',
-            'format': 'romantik ve destekleyici, kişisel',
-            'approach': 'duygusal destek ver, birlikte çözüm ara, şefkat göster',
-            'avoid': 'soğuk analiz, impersonal tavsiyeler'
+            'tone': 'friendly and supportive',
+            'format': 'romantic and supportive, personal',
+            'approach': 'show empathy, share experience, give practical advice',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'girlfriend': {
-            'tone': 'sevgi dolu, empatik ve sıcak',
-            'format': 'samimi kız arkadaş sohbeti tarzında',
-            'approach': 'duygularını anla, deneyim paylaş, moral ver',
-            'avoid': 'teknik analiz, robotik çözümler, soğuk tavsiyeler'
+            'tone': 'friendly and supportive',
+            'format': 'natural conversation style, like a girlfriend',
+            'approach': 'show empathy, share experience, give practical advice',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'spouse_male': {
-            'tone': 'destekleyici eş, güvenilir ve anlayışlı',
-            'format': 'evlilik deneyimi olan, olgun yaklaşım',
-            'approach': 'beraber düşün, uzun vadeli çözümler öner, sabırlı ol',
-            'avoid': 'otoriter tavır, hızlı yargılar'
+            'tone': 'friendly and supportive',
+            'format': 'natural conversation style, like a spouse, has a mature way of thinking',
+            'approach': 'recommendations, long-term solutions, patient',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'spouse_female': {
-            'tone': 'destekleyici eş, sıcak ve pratik',
-            'format': 'evlilik deneyimi olan, anlayışlı yaklaşım',
-            'approach': 'duygusal destek ver, pratik çözümler öner, sabırlı ol',
-            'avoid': 'eleştirel tavır, soğuk analiz'
+            'tone': 'friendly and supportive',
+            'format': 'natural conversation style, like a spouse, has a mature way of thinking',
+            'approach': 'recommendations, long-term solutions, patient',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'brother': {
-            'tone': 'koruyucu kardeş, samimi ve direkt',
-            'format': 'kardeşçe sohbet, açık ve dürüst',
-            'approach': 'koruyucu ol, deneyim paylaş, pratik çözümler ver',
-            'avoid': 'fazla ciddi ton, resmi dil'
+            'tone': 'friendly and supportive',
+            'format': 'natural conversation style, like a brother',
+            'approach': 'recommendations, long-term solutions, patient',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'sister': {
-            'tone': 'destekleyici kız kardeş, anlayışlı',
-            'format': 'kız kardeş sohbeti, samimi ve eğlenceli',
-            'approach': 'empati göster, deneyim paylaş, moral ver',
-            'avoid': 'ağabeylik taslama, otoriter tavır'
+            'tone': 'friendly and supportive',
+            'format': 'natural conversation style, like a sister',
+            'approach': 'show empathy, share experience, give moral support',
+            'avoid': 'formal language, bullet points, robotic responses'
         },
         'mentor': {
-            'tone': 'deneyimli rehber, bilge ve destekleyici',
-            'format': 'rehberlik eden ama baskıcı olmayan',
-            'approach': 'deneyim paylaş, adım adım yönlendir, motivasyon ver',
-            'avoid': 'ders verici tavır, fazla teorik bilgi'
+            'tone': 'experienced advisor, wise and supportive',
+            'format': 'guiding, but not bossy',
+            'approach': 'share experience, step-by-step guidance, motivation',
+            'avoid': 'lecturing attitude, too much theoretical knowledge'
         },
         'advisor': {
-            'tone': 'profesyonel danışman, objektif',
-            'format': 'danışmanlık tarzında ama sıcak',
-            'approach': 'seçenekleri göster, pros/cons analizi, kararı sana bırak',
-            'avoid': 'kesin yargılar, tek çözüm dayatma'
+            'tone': 'professional advisor, objective',
+            'format': 'advisory style, but warm',
+            'approach': 'show options, pros/cons analysis, let you make the decision',
+            'avoid': 'definitive judgments, single solution dominance'
         },
         'academician': {
-            'tone': 'bilgili öğretmen, sabırlı ve açıklayıcı',
-            'format': 'eğitici ama sıkıcı olmayan',
-            'approach': 'kavramları açıkla, örnekler ver, merak uyandır',
-            'avoid': 'fazla akademik jargon, sıkıcı dersler'
+            'tone': 'knowledgeable teacher, patient and explanatory',
+            'format': 'educational style, but not boring',
+            'approach': 'explain concepts, give examples, spark curiosity',
+            'avoid': 'too much academic jargon, dry lectures'
         }
     }
     
@@ -546,11 +546,11 @@ def calculate_cooperation_level(feedback_history):
 def get_cooperation_instructions(level):
     """Get cooperation instructions based on level"""
     instructions = {
-        1: "Kısa ve öz cevaplar ver. Kullanıcı daha az detay istiyor gibi görünüyor.",
-        2: "Orta uzunlukta cevaplar ver. Fazla detaya girme.",
-        3: "Dengeli cevaplar ver. Ne çok kısa ne çok uzun.",
-        4: "Detaylı ve yardımcı cevaplar ver. Kullanıcı memnun görünüyor.",
-        5: "Çok detaylı, yaratıcı ve kapsamlı cevaplar ver. Kullanıcı yanıtlarından çok memnun."
+        1: "Give short and concise answers. The user seems to want less detail.",
+        2: "Give answers of medium length. Don't go into too much detail.",
+        3: "Give balanced answers. Not too short or too long.",
+        4: "Give detailed and helpful answers. The user seems satisfied.",
+        5: "Give very detailed, creative and comprehensive answers. The user is very satisfied with the answers."
     }
     return instructions.get(level, instructions[3])
 
@@ -583,20 +583,20 @@ def get_user_persona_context(user_id):
             return ""
         
         context = "\n\n--- PERSONA BAĞLAMI ---\n"
-        context += f"Sen bir {persona_data.get('role', 'asistan')} rolündesin.\n"
+        context += f"You are a {persona_data.get('role', 'asistan')} role.\n"
         
         if persona_data.get('backstory'):
-            context += f"Geçmişin: {persona_data['backstory']}\n"
+            context += f"Backstory: {persona_data['backstory']}\n"
         
         if persona_data.get('personality_traits'):
             traits = ', '.join(persona_data['personality_traits'])
-            context += f"Kişilik özelliklerin: {traits}\n"
+            context += f"Personality traits: {traits}\n"
         
         if persona_data.get('interests'):
             interests = ', '.join(persona_data['interests'])
-            context += f"İlgi alanların: {interests}\n"
+            context += f"Interests: {interests}\n"
         
-        context += "Bu persona özelliklerine uygun şekilde yanıt ver.\n"
+        context += "Respond to these persona traits.\n"
         
         return context
         
@@ -656,7 +656,7 @@ Provide an English response and write in a personal diary style.]"""
         
         # Fallback if parsing fails
         if not title:
-            title = "Günlük Konuşma"
+            title = "Daily Conversation"
         if not summary:
             summary = summary_text[:200] + "..." if len(summary_text) > 200 else summary_text
         
@@ -682,8 +682,8 @@ def auto_create_diary_entry(user_id, chat_id):
         diary_entry = {
             'user_id': user_id,
             'chat_id': chat_id,
-            'title': 'Yeni Konuşma',
-            'summary': 'Konuşma henüz başlamadı...',
+            'title': 'New Conversation',
+            'summary': 'Conversation has not started yet...',
             'date': datetime.now(timezone.utc),
             'message_count': 0,
             'created_at': datetime.now(timezone.utc),
@@ -995,10 +995,10 @@ Respond according to these persona characteristics. {persona_response_style['coo
                     },
                     {
                         "role": "user", 
-                        "content": f"""Create a strategy based on the analysis below. Write small steps.
+                        "content": f"""Create a strategy based on the analysis below. Write the titles of the steps only like "Gather necessary materials", "Cut the wood", "Provide insulation" etc...
                         Analysis: {analysis}
                         
-                        DO NOT START YOUR RESPONSE WITH ANY INTRODUCTORY SENTENCE. Go directly into explaining your strategy as a continuation of the analysis. Do not repeat the analysis in your response."""
+                        DO NOT START YOUR RESPONSE WITH ANY INTRODUCTORY SENTENCE. Go directly into explaining your strategy as a continuation of the analysis. Do not repeat the analysis in your response. Do not add finishing messages to your response."""
                     }
                 ],
                 max_tokens=1000,
@@ -1020,7 +1020,7 @@ Respond according to these persona characteristics. {persona_response_style['coo
                         Analysis: {analysis}
                         Strategy: {strategy}
                         
-                        DO NOT START YOUR RESPONSE WITH ANY INTRODUCTORY SENTENCE. Go directly into explaining your implementation steps as a continuation of the analysis and strategy. Do not repeat the analysis or strategy in your response."""
+                        DO NOT START YOUR RESPONSE WITH ANY INTRODUCTORY SENTENCE. Go directly into explaining your implementation steps as a continuation of the analysis and strategy. Do not repeat the strategy steps in your response. Explain calculated implementation steps of strategy in a natural way. For example, if user wants to build a dog house, explain how to build it with mathematically calculated steps.(as an example: use 20x20 wooden plates, leave 50 cm space between walls, use 10x10 wooden plates for roof, use 5x5 wooden plates for floor)"""
                     }
                 ],
                 max_tokens=1500,
